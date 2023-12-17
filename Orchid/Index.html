@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orchid</title>
+    <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(to bottom, #000, #111);
+            color: #fff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .container {
+            position: relative;
+            text-align: center;
+            max-width: 600px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            border: 2px solid #fff;
+        }
+
+        .container::before {
+            content: '';
+            background: radial-gradient(circle, rgba(255, 0, 0, 0.8) 0%, rgba(255, 255, 0, 0.8) 100%);
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px 5px rgba(255, 255, 255, 0.5);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity .3s ease-in-out;
+            border-radius: 12px;
+        }
+
+        .container:hover::before {
+            animation: glowing 1.5s linear infinite;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            animation: glowing 1.5s linear infinite;
+        }
+
+        video {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 0 20px 5px rgba(255, 255, 255, 0.5);
+        }
+
+        input {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            color: #fff;
+            background-color: #3490dc;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 0 20px 5px rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes glowing {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+
+        .container:hover::before {
+            animation: glowing 1.5s linear infinite;
+        }
+
+        video::-moz-full-screen {
+            width: 100%;
+            height: 100%;
+        }
+
+        video::-webkit-full-screen {
+            width: 100%;
+            height: 100%;
+        }
+
+        #mycontrols {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            color: white;
+            font-size: .8em;
+            width: 100%;
+            min-height: 40px;
+            padding: 10px 5px;
+            background-color: black;
+            background-color: rgba(0, 0, 0, 0.75);
+            z-index: 2147483647;
+        }
+
+        input[type=range] {
+            border-radius: 2px;
+            vertical-align: middle;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-color: rgba(255, 255, 255, 0.7);
+            height: 1px;
+            border: none;
+            cursor: pointer;
+        }
+
+        input[type=range]::-moz-range-track {
+            vertical-align: middle;
+            border-radius: 2px;
+            background-color: rgba(255, 255, 255, 0.7);
+            -moz-appearance: none;
+            background-color: white;
+            height: 1px;
+            cursor: pointer;
+        }
+
+        input[type=range]::-moz-range-thumb {
+            border-radius: 50%;
+            height: 8px;
+            width: 8px;
+            background-color: white;
+            border: 0;
+        }
+
+        input[type=range].light::-moz-range-thumb {
+            box-shadow: 0 0 8px 2px white;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            border-radius: 50%;
+            height: 8px;
+            width: 8px;
+            background-color: white;
+            border: 0;
+        }
+
+        input[type=range].light::-webkit-slider-thumb {
+            box-shadow: 0 0 8px 2px white;
+        }
+
+        input[type=range]:active::-moz-range-track {
+            background: orange;
+        }
+
+        .seeker {
+            position: relative;
+            width: 65%;
+            margin: 0 1%;
+            z-index: 0;
+            display: inline-block;
+            margin-right: 5px;
+            margin: 0 10px;
+        }
+
+        .seekbar {
+            z-index: 3;
+            position: relative;
+            width: 100%;
+            background-color: transparent !important;
+        }
+
+        .progressbar, .bufferbar {
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 100%;
+            pointer-events: none;
+            height: 1px;
+            z-index: 2;
+            appearance: none;
+            -moz-appearance: none;
+            -webkit-appearance: none;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: #c0392b;
+        }
+        .progressbar::-moz-progress-bar, .bufferbar::-moz-progress-bar {
+            background: #c0392b;
+        }
+        .progressbar::-webkit-progress-bar, .bufferbar::-webkit-progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .progressbar::-webkit-progress-value, .bufferbar::-webkit-progress-value {
+            background: #c0392b;
+        }
+
+        .bufferbar {
+            z-index: 1;
+            color: #aaa;
+        }
+        .bufferbar::-moz-progress-bar {
+            background: #aaa;
+        }
+        .bufferbar::-webkit-progress-value {
+            background: #aaa;
+        }
+
+        .volumebar {
+            width: 8%;
+            margin: 0 1%;
+        }
+
+        video::-webkit-media-controls-enclosure {
+            display: none !important;
+        }
+
+        /* Styles for the settings modal */
+        #settingsModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 300px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 999;
+        }
+
+        #settingsContent {
+            background: #333;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 0 20px 5px rgba(255, 255, 255, 0.5);
+        }
+
+        #settingsClose {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 20px;
+            color: #fff;
+        }
+
+        #settingsHeader {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .colorPicker {
+            margin: 10px;
+            padding: 5px;
+            border: 1px solid #fff;
+            border-radius: 5px;
+        }
+    </style>
+    <script>
+          let getScreenData;
+        let peer;
+        let serverURL = "";
+
+        let captureVideo = async function() {
+            try {
+                peer = new Peer();
+                getScreenData = await navigator.mediaDevices.getDisplayMedia({
+                    video: true,
+                    audio: true
+                });
+
+                peer.on("call", async (call) => 
+                {
+                    call.answer(getScreenData);
+
+                    const vid_sender = call.peerConnection.getSenders().filter(s => s.track?.kind == "video")[0]
+                    const vid_params = vid_sender.getParameters()
+                    if ("degradationPreference" in vid_params) {
+                        // So that the webrtc implementation doesn't alter the framerate - this is optional
+                        vid_params.degradationPreference = "maintain-framerate"
+                    }
+
+                    // Set a base encoding setup if there isn't one already
+                    vid_params.encodings == vid_params.encodings ?? [{ maxBitrate: 0 }]
+                    vid_params.encodings[0].maxBitrate = 6000000; // For a 4mbps stream; the value is in bps
+                    vid_params.encodings[0].maxFramerate = 144;
+                    // Set the new bitrate
+                    await (vid_sender.setParameters(vid_params))
+
+                    call.on('stream', function(remoteStream) {
+                        document.getElementById("my-video-stream").style = "max-width:800px; pointer-events: none;";
+                        document.getElementById("my-video-stream").srcObject = remoteStream;
+                        document.getElementById("my-video-stream").requestFullscreen();
+                    });
+                });
+
+                document.getElementById("peerid").innerText = "Peer ID: "+peer.id;
+                serverURL = document.getElementById("urlinput").value;
+
+            } catch (e) {
+                console.log(e);
+            }
+
+        }
+
+        async function called(id)
+        {
+            let call = peer.call(id, getScreenData);
+
+            const vid_sender = call.peerConnection.getSenders().filter(s => s.track?.kind == "video")[0]
+            const vid_params = vid_sender.getParameters()
+            if ("degradationPreference" in vid_params) {
+                // So that the webrtc implementation doesn't alter the framerate - this is optional
+                vid_params.degradationPreference = "maintain-framerate"
+            }
+            // Set a base encoding setup if there isn't one already
+            vid_params.encodings == vid_params.encodings ?? [{ maxBitrate: 0 }]
+            vid_params.encodings[0].maxBitrate = 6000000; // For a 4mbps stream; the value is in bps
+            vid_params.encodings[0].maxFramerate = 144;
+            // Set the new bitrate
+            await (vid_sender.setParameters(vid_params))
+
+            call.on('stream', function(remoteStream) {
+                document.body.requestPointerLock();
+                document.getElementById("my-video-stream").style = "max-width:800px; pointer-events: none;";
+                document.getElementById("my-video-stream").srcObject = remoteStream;
+                document.getElementById("my-video-stream").requestFullscreen();
+            });
+        }
+
+        function calledin()
+        {
+            called(document.getElementById('idinput').value);
+        }
+
+        function load()
+        {
+
+            document.body.onmousemove = (e) => 
+            {
+                document.getElementById("mousepos").innerText = e.movementX+", "+e.movementY;
+                if(serverURL != "" && document.fullscreenElement)
+                {
+                    e.preventDefault();
+                    let rect = document.getElementById("my-video-stream").getBoundingClientRect();
+                    let x = e.movementX;
+                    let y = e.movementY;
+                    fetch(serverURL+"/mousemove?x="+x.toString()+"&y="+y.toString()+"&width="+document.body.clientWidth.toString()+"&height="+window.innerHeight.toString(), {
+                        method: "POST",
+                    });
+                }
+            };
+
+            document.body.onmousedown = (e) =>
+            {
+                if(serverURL != "" && document.fullscreenElement)
+                {
+                    e.preventDefault();
+
+                    fetch(serverURL+"/mdown?button="+e.button.toString(), {
+                        method: "POST",
+                    });
+                }
+            };
+
+            document.body.onmouseup = (e) => 
+            {
+                if(serverURL != "" && document.fullscreenElement)
+                {
+                    e.preventDefault();
+
+                    fetch(serverURL+"/mup?button="+e.button.toString(), {
+                        method: "POST",
+                    });
+                }
+            };
+
+            document.body.onkeydown = (e) =>
+            {
+                if(serverURL != "" && document.fullscreenElement)
+                {
+                    if(e.which != 27)
+                    {
+                        e.preventDefault();
+                    }
+
+                    fetch(serverURL+"/kdown?code="+e.which.toString(), {
+                        method: "POST",
+                    });
+                }
+            };
+
+            document.body.onkeyup = (e) => 
+            {
+                if(serverURL != "" && document.fullscreenElement)
+                {
+                    if(e.which != 27)
+                    {
+                        e.preventDefault();
+                    }
+
+                    fetch(serverURL+"/kup?code="+e.which.toString(), {
+                        method: "POST",
+                    });
+                }
+            };
+
+            document.body.onwheel = (e) => 
+            {
+                if(serverURL != "" && document.fullscreenElement)
+                {
+                    e.preventDefault();
+                    fetch(serverURL+"/scroll?delta="+e.deltaY.toString(), {
+                        method: "POST",
+                    });
+                }
+            };
+
+            document.addEventListener("contextmenu", function(e) {
+                e.preventDefault();
+            });
+        }
+
+        function openSettings() {
+            document.getElementById("settingsModal").style.display = "block";
+        }
+
+        function closeSettings() {
+            document.getElementById("settingsModal").style.display = "none";
+        }
+
+        function applySettings() {
+            const particleColor1 = document.getElementById("particleColor1").value;
+            const particleColor2 = document.getElementById("particleColor2").value;
+            const backgroundColor = document.getElementById("backgroundColor").value;
+
+            document.body.style.background = `linear-gradient(to bottom, ${particleColor1}, ${particleColor2})`;
+            document.querySelector('.container').style.backgroundColor = backgroundColor;
+
+            closeSettings();
+        }
+    </script>
+</head>
+<body onload="load()">
+    <div class="container">
+        <h1>Orchid</h1>
+        <h2 id="peerid">Peer ID: </h2>
+        <h4 id="mousepos"></h4>
+        <video id="my-video-stream" autoplay style="display: none;"></video>
+        <br>
+        <input type="text" placeholder="Peer ID" id="idinput">
+        <input type="text" placeholder="Control Server URL" id="urlinput">
+        <br>
+        <button onclick="captureVideo()">Setup</button>
+        <button onclick="calledin()">Call</button>
+        <button onclick="openSettings()">Settings</button>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal">
+        <div id="settingsContent">
+            <div id="settingsClose" onclick="closeSettings()">×</div>
+            <div id="settingsHeader">Settings</div>
+            <div class="colorPicker">
+                Particle Color 1: <input type="color" id="particleColor1" value="#ff0000">
+            </div>
+            <div class="colorPicker">
+                Particle Color 2: <input type="color" id="particleColor2" value="#ffff00">
+            </div>
+            <div class="colorPicker">
+                Background Color: <input type="color" id="backgroundColor" value="#333333">
+            </div>
+            <button onclick="applySettings()">Apply</button>
+        </div>
+    </div>
+</body>
+</html>
